@@ -10,9 +10,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+from pathlib import Path
+
 @st.cache_data
 def load_data():
-    df = pd.read_excel("penjualan-jenna.xlsx")
+    BASE_DIR = Path(__file__).parent
+    excel_file = BASE_DIR / "penjualan-jenna.xlsx"
+
+    df = pd.read_excel(excel_file)
     df.columns = df.columns.str.strip()
 
     df["Tanggal"] = pd.to_datetime(df["Tanggal"], errors="coerce")

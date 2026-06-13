@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import plotly.express as px
-
+from datetime import datetime
 st.set_page_config(
     page_title="Dashboard Penjualan Jenna Scent",
     page_icon="🧴",
@@ -116,8 +116,9 @@ df_filter = df_filter[df_filter["Varian"].isin(selected_varian)]
 
 if df_filter.empty:
     st.warning("Tidak ada data pada filter yang dipilih.")
-    st.stop()
-
+    waktu_update = datetime.now().strftime(
+    "%d %B %Y %H:%M:%S"
+)
 if tema == "Dark Mode":
     app_bg = "#0f172a"
     sidebar_bg = "#111827"
@@ -435,48 +436,49 @@ if not varian_total.empty:
     produk_terlaris = varian_total.iloc[0]["Varian"]
     produk_qty = int(varian_total.iloc[0]["Quantity"])
 
-hero_col, logo_col = st.columns([0.76, 0.24])
+hero_col = st.container()
 
-with hero_col:
-    st.markdown(
-        f"""
-        <div class="hero">
-            <div class="hero-label">Jenna Scent Sales Analytics</div>
-            <h1 class="hero-title">Dashboard Monitoring Penjualan</h1>
-            <p class="hero-desc">
-                Pantau performa penjualan parfum berdasarkan periode terpilih.
-                Dashboard ini menyajikan ringkasan penjualan, stok, transaksi,
-                varian terlaris, distribusi produk, dan tren penjualan secara visual.
-            </p>
-            <div class="hero-label" style="margin-top:20px; margin-bottom:0;">
-                {mode_waktu} • {label_periode}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with logo_col:
-    st.markdown('<div class="hero-logo-card">', unsafe_allow_html=True)
-    if logo is not None:
-        st.image(logo, use_container_width=True)
-    else:
-        st.markdown("<h2>Jenna<br>Scent</h2>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<h2 class="section-title">Ringkasan Utama</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">Monitoring Penjualan Jenna Scent</h2>', unsafe_allow_html=True)
 st.markdown('<div class="section-subtitle">Indikator performa berdasarkan filter yang sedang aktif.</div>', unsafe_allow_html=True)
 
 k1, k2, k3, k4, k5 = st.columns(5)
 
 kpi_items = [
-    ("Total Terjual", format_number(total_terjual), "Qty produk", "🛍️"),
-    ("Jumlah Varian", format_number(jumlah_varian), "Varian aktif", "🏷️"),
-    ("Jumlah Aroma", format_number(jumlah_aroma), "Kategori aroma", "🌬️"),
-    ("Total Stok", format_number(total_stok), "Unit tersedia", "📦"),
-    ("Total Transaksi", format_number(total_transaksi), "Transaksi", "🧾"),
-]
+    (
+        "Total Terjual",
+        format_number(total_terjual),
+        "Qty produk",
+        "🛍️"
+    ),
 
+    (
+        "Produk Terlaris",
+        produk_terlaris,
+        f"{produk_qty} unit",
+        "🏆"
+    ),
+
+    (
+        "Jumlah Varian",
+        format_number(jumlah_varian),
+        "Varian aktif",
+        "🏷️"
+    ),
+
+    (
+        "Total Stok",
+        format_number(total_stok),
+        "Unit tersedia",
+        "📦"
+    ),
+
+    (
+        "Total Transaksi",
+        format_number(total_transaksi),
+        "Transaksi",
+        "🧾"
+    )
+]
 for col, item in zip([k1, k2, k3, k4, k5], kpi_items):
     title, value, note, icon = item
     with col:
@@ -510,7 +512,35 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.success(
+    f"""
+    🏆 Produk Terlaris Saat Ini
 
+    {produk_terlaris}
+
+    Total Terjual:
+    {produk_qty} Unit
+    """
+)
+stok_rendah = df_filter[
+    df_filter["Stok Barang"] < 20
+]
+
+if not stok_rendah.empty:
+
+    st.warning(
+        f"""
+        ⚠️ Ditemukan
+        {len(stok_rendah)}
+        produk dengan stok kurang dari 20 unit.
+        """
+    )
+
+else:
+
+    st.success(
+        "✅ Seluruh stok produk dalam kondisi aman."
+    )
 st.markdown('<h2 class="section-title">Analisis Penjualan</h2>', unsafe_allow_html=True)
 st.markdown('<div class="section-subtitle">Visualisasi penjualan berdasarkan varian, aroma, dan tanggal transaksi.</div>', unsafe_allow_html=True)
 
